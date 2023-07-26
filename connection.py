@@ -24,11 +24,11 @@ class SupabaseConnection(ExperimentalBaseConnection[supabase.create_client]):
     def cursor(self) -> supabase.create_client:
         return self._instance.table(SupabaseConnection.db)
 
-    def query(self, filter: str = "*", **kwargs) -> pd.DataFrame:
-        @cache_data(ttl = 600)
+    def query(self, filter: str = "*", ttl: int = 600, **kwargs) -> pd.DataFrame:
+        @cache_data(ttl = ttl)
         def _query(filter: str = "*") -> pd.DataFrame:
             cursor = self.cursor()
-            return cursor.select(filter).execute()
+            data_table = cursor.select(filter).execute()
+            return pd.DataFrame(data_table.data)
         
-        return _query(filter, **kwargs)
-       
+        return _query(filter, **kwargs)       
